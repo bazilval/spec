@@ -85,6 +85,10 @@
     <Compile Include="Model\Diameter.cs" />
     <Compile Include="Model\Element.cs" />
     <Compile Include="Model\DetailType.cs" />
+    <Compile Include="Model\ElementTable.cs" />
+    <Compile Include="Model\ElementType.cs" />
+    <Compile Include="Model\Embedded.cs" />
+    <Compile Include="Model\Material.cs" />
     <Compile Include="Model\Steel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

@@ -4,5 +4,10 @@
     {
         public string Name { get; }
         public string Gost { get; }
+        public Steel(string name, string gost)
+        {
+            Name = name;
+            Gost = gost;
+        }
     }
 }
