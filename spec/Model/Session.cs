@@ -26,7 +26,7 @@ namespace spec.Model
             }
             else
             {
-                throw new ArgumentException("Такой элемент уже существует!");
+                throw new ArgumentException("Элемент с таким именем уже существует!");
             }
         }
         public void RemoveElement(Element element)
@@ -37,5 +37,23 @@ namespace spec.Model
             }
         }
 
+        public void AddAssembly(ElementAssembly assembly)
+        {
+            if (AssemblyNames.Add(assembly.Name))
+            {
+                AssemblyNames.Add(assembly);
+            }
+            else
+            {
+                throw new ArgumentException("Сборка с таким именем уже существует!");
+            }
+        }
+        public void RemoveAssembly(ElementAssembly assembly)
+        {
+            if (AssemblyNames.Remove(assembly.Name))
+            {
+                Assemblies.Remove(assembly);
+            }
+        }
     }
 }
