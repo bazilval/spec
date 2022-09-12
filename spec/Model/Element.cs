@@ -16,37 +16,49 @@ namespace spec.Model
         public List<Embedded> Embeddeds { get; set; }
         public List<Material> Materials { get; set; }
         public HashSet<string> Marks { get; set; }
-        public Element(string name, ElementType type, List<Detail> details, List<Embedded> embeddeds, List<Material> materials)
+        //public HashSet<Diameter> Diameters { get; set; }
+        public int Count { get; set; }
+        public Element(string name, ElementType type, int count)
         {
             Name = name;
             Type = type;
+            Count = count;
             Table = null;
             SteelTable = null;
-            Details = details;
-            Embeddeds = embeddeds;
-            Materials = materials;
+            Details = new List<Detail>();
+            Embeddeds = new List<Embedded>();
+            Materials = new List<Material>();
         }
-        public Element(string name, ElementType type): this(name, type, new List<Detail>(), new List<Embedded>(), new List<Material>()) { }
-        public Element(string name, ElementType type, List<Detail> details) : this(name, type, details, new List<Embedded>(), new List<Material>()) { }
-        public Element(string name, ElementType type, List<Detail> details, List<Embedded> embeddeds) : this(name, type, details, embeddeds, new List<Material>()) { }
-        public Element(string name, ElementType type, List<Detail> details, List<Material> materials) : this(name, type, details, new List<Embedded>(), materials) { }
-        public Element(string name, ElementType type, List<Embedded> embeddeds) : this(name, type, new List<Detail>(), embeddeds, new List<Material>()) { }
-        public Element(string name, ElementType type, List<Embedded> embeddeds, List<Material> materials) : this(name, type, new List<Detail>(), embeddeds, materials) { }
-        public Element(string name, ElementType type, List<Material> materials) : this(name, type, new List<Detail>(), new List<Embedded>(), materials) { }
-
         public void Add(Detail detail)
         {
             if (detail == null) return;
             if (Marks.Add(detail.Mark))
             {
                 Details.Add(detail);
+                //Diameters.Add(detail.GetDiameter());
             }
             else
             {
                 throw new ArgumentException($"Марка \"{detail.Mark}\" уже существует!");
             }
         }
+        public void Remove(Detail detail)
+        {
+            if (detail == null) return;
 
+            if (Details.Remove(detail))
+            {
+                Marks.Remove(detail.Mark);
+            }
+        }
+        public void OnChange()
+        {
+
+        }
+        public bool IsMarkExist(string mark)
+        {
+            return Marks.Contains(mark);
+        }
 
 
 
