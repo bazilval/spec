@@ -6,29 +6,29 @@ using System.Threading.Tasks;
 
 namespace spec.Model
 {
-    internal class Element
+    public class Element
     {
         public string Name { get; set; }
         public ElementType Type { get; set; }
-        public ElementTable Table { get; set; }
-        public ElementTable SteelTable { get; set; }
+        public Table Table { get; set; }
         public List<Detail> Details { get; set; }
         public List<Embedded> Embeddeds { get; set; }
         public List<Material> Materials { get; set; }
         public HashSet<string> Marks { get; set; }
         //public HashSet<Diameter> Diameters { get; set; }
         public int Count { get; set; }
-        public Element(string name, ElementType type, int count)
+        public Element(string name, ElementType type, int count, List<Detail> details, List<Material> materials, List<Embedded> embeddeds, HashSet<string> marks)
         {
             Name = name;
             Type = type;
             Count = count;
-            Table = null;
-            SteelTable = null;
-            Details = new List<Detail>();
-            Embeddeds = new List<Embedded>();
-            Materials = new List<Material>();
+            Table = new Table();
+            Details = details;
+            Embeddeds = embeddeds;
+            Materials = materials;
+            Marks = marks;
         }
+        public Element(string name, ElementType type, int count) : this(name, type, count, new List<Detail>(), new List<Material>(), new List<Embedded>(), new HashSet<string>()) { }
         public void Add(Detail detail)
         {
             if (detail == null) return;
@@ -36,6 +36,7 @@ namespace spec.Model
             {
                 Details.Add(detail);
                 //Diameters.Add(detail.GetDiameter());
+                OnChange();
             }
             else
             {
@@ -49,6 +50,7 @@ namespace spec.Model
             if (Details.Remove(detail))
             {
                 Marks.Remove(detail.Mark);
+                OnChange();
             }
         }
         public void OnChange()
@@ -59,8 +61,9 @@ namespace spec.Model
         {
             return Marks.Contains(mark);
         }
-
-
-
+        public bool IsReady()
+        {
+            return Details.All(x=>x.IsReady());
+        }
     }
 }

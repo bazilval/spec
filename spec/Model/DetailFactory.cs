@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace spec.Model
 {
-    internal static class DetailFactory
+    public static class DetailFactory
     {
         public static Detail CreateRegularDetail(Element element, string mark, Steel steel, Diameter diameter, int count, double len)
         {

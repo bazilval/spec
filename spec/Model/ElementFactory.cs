@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace spec.Model
 {
-    internal static class ElementFactory
+    public static class ElementFactory
     {
         public static Element CreateUnknown(string name, int count)
         {

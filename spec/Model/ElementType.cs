@@ -57,11 +57,11 @@
                 case SlabTypes.UNKNOWN:
                     goto default;
                 case SlabTypes.FLOOR:
-                    return descripton +  $" перекрытия {(HeightMark != null ? $"на отм. {HeightMark:d3}," : "")}толщиной {Thickness}";
+                    return descripton +  $" перекрытия {(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")}толщиной {Thickness}";
                 case SlabTypes.ROOF:
-                    return descripton + $" покрытия {(HeightMark != null ? $"на отм. {HeightMark:d3}," : "")}толщиной {Thickness}";
+                    return descripton + $" покрытия {(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")}толщиной {Thickness}";
                 default:
-                    return descripton + $" {(HeightMark != null ? $"на отм. {HeightMark:d3}," : "")}толщиной {Thickness}";
+                    return descripton + $" {(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")}толщиной {Thickness}";
             }
         }
         public enum SlabTypes { UNKNOWN, FLOOR, ROOF };

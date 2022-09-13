@@ -1,6 +1,6 @@
 ﻿namespace spec.Model
 {
-    internal class ElementAssembly
+    public class AssemblyTable
     {
     }
 }
