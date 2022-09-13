@@ -24,28 +24,29 @@ namespace SpecTest
             var wall = ElementFactory.CreateWall("СТм1", 1, 500, 5000);
             project.AddElement(wall);
             Console.WriteLine(wall.Type.GetDescripton());
+            int a = 1;
 
             for (int i = 1; i < 5; i++)
             {
-                var detail = DetailFactory.CreateRegularDetail(wall, i.ToString(), A500, d16, i * 5, i * 400);
+                var detail = DetailFactory.CreateRegularDetail(wall, (a+i).ToString(), A500, d16, i * 5, i * 400);
                 wall.Add(detail);
             }
 
-            for (int i = 5; i < 1000; i++)
+            for (int i = 5; i < 10; i++)
             {
-                var detail = DetailFactory.CreateTotalDetail(wall, i.ToString(), A500, d32, i * 40000);
+                var detail = DetailFactory.CreateTotalDetail(wall, (a + i).ToString(), A500, d32, i * 40000);
                 wall.Add(detail);
             }
-            //for (int i = 10; i < 13; i++)
-            //{
-            //    var detail = DetailFactory.CreateAverageDetail(wall, i.ToString(), A400, d16, i * 5, i * 400, i * 405);
-            //    wall.Add(detail);
-            //}
-            //for (int i = 13; i < 15; i++)
-            //{
-            //    var detail = DetailFactory.CreateRegularDetail(wall, i.ToString(), A240, d8, i * 5, i * 40);
-            //    wall.Add(detail);
-            //}
+            for (int i = 10; i < 13; i++)
+            {
+                var detail = DetailFactory.CreateAverageDetail(wall, (a + i).ToString(), A400, d16, i * 5, i * 400, i * 405);
+                wall.Add(detail);
+            }
+            for (int i = 13; i < 15; i++)
+            {
+                var detail = DetailFactory.CreateRegularDetail(wall, (a + i).ToString(), A240, d8, i * 5, i * 40);
+                wall.Add(detail);
+            }
 
             TableFactory.CreateElementTable(wall);
 

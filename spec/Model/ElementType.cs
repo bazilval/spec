@@ -33,7 +33,7 @@
 
         public override string GetDescripton()
         {
-            return $"Устройство монолитной ж/б стены {Name} {(Height != null ? $"высотой {Height}," : "")} толщиной {Thickness}";
+            return $"Устройство монолитной ж/б стены {Name} {(Height != null ? $"высотой {Height}мм," : "")} толщиной {Thickness}мм";
         }
     }
     public class SlabType : ElementType
@@ -57,12 +57,15 @@
                 case SlabTypes.UNKNOWN:
                     goto default;
                 case SlabTypes.FLOOR:
-                    return descripton +  $" перекрытия {(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")}толщиной {Thickness}";
+                    descripton += $" перекрытия ";
+                    break;
                 case SlabTypes.ROOF:
-                    return descripton + $" покрытия {(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")}толщиной {Thickness}";
+                    descripton += $" покрытия ";
+                    break;
                 default:
-                    return descripton + $" {(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")}толщиной {Thickness}";
+                    break;
             }
+            return descripton + $"{(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")} толщиной { Thickness}мм";
         }
         public enum SlabTypes { UNKNOWN, FLOOR, ROOF };
     }
