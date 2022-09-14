@@ -100,20 +100,20 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\Detail.cs" />
-    <Compile Include="Model\DetailFactory.cs" />
-    <Compile Include="Model\Diameter.cs" />
-    <Compile Include="Model\Element.cs" />
-    <Compile Include="Model\DetailType.cs" />
-    <Compile Include="Model\AssemblyElement.cs" />
-    <Compile Include="Model\ElementFactory.cs" />
-    <Compile Include="Model\Table.cs" />
-    <Compile Include="Model\ElementType.cs" />
-    <Compile Include="Model\Embedded.cs" />
-    <Compile Include="Model\Material.cs" />
+    <Compile Include="Model\Detail\Detail.cs" />
+    <Compile Include="Model\Detail\DetailFactory.cs" />
+    <Compile Include="Model\Detail\Diameter.cs" />
+    <Compile Include="Model\Element\Element.cs" />
+    <Compile Include="Model\Detail\DetailType.cs" />
+    <Compile Include="Model\Assembly\AssemblyElement.cs" />
+    <Compile Include="Model\Element\ElementFactory.cs" />
+    <Compile Include="Model\Table\Table.cs" />
+    <Compile Include="Model\Element\ElementType.cs" />
+    <Compile Include="Model\Embedded\Embedded.cs" />
+    <Compile Include="Model\Material\Material.cs" />
     <Compile Include="Model\Project.cs" />
-    <Compile Include="Model\Steel.cs" />
-    <Compile Include="Model\TableFactory.cs" />
+    <Compile Include="Model\Detail\Steel.cs" />
+    <Compile Include="Model\Table\TableFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
