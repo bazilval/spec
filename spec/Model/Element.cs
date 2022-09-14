@@ -22,7 +22,7 @@ namespace spec.Model
             Name = name;
             Type = type;
             Count = count;
-            Table = new Table();
+            Table = null;
             Details = details;
             Embeddeds = embeddeds;
             Materials = materials;

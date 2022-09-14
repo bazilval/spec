@@ -6,7 +6,6 @@ namespace spec.Model
     {
         public string Name { get; set; }
         public List<Element> Elements { get; set; }
-        public AssemblyTable Table { get; set; }
-        public AssemblyTable SteelTable { get; set; }
+        public Table Table { get; set; }
     }
 }

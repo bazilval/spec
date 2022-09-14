@@ -31,6 +31,18 @@ namespace spec.Model
                 throw new ArgumentException($"Элемент \"{element.Name}\" уже существует!");
             }
         }
+        public void RenameElement(Element element, string name)
+        {
+            if (ElementNames.Add(name))
+            {
+                ElementNames.Remove(element.Name);
+                element.Name = name;
+            }
+            else
+            {
+                throw new ArgumentException($"Элемент \"{name}\" уже существует!");
+            }
+        }
         public void RemoveElement(Element element)
         {
             if (ElementNames.Remove(element.Name))

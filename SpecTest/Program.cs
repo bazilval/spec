@@ -48,10 +48,20 @@ namespace SpecTest
                 wall.Add(detail);
             }
 
-            TableFactory.CreateElementTable(wall);
+            TableFactory.CreateTables(wall);
 
-            var table = wall.Table.Element;
+            var table1 = wall.Table.Element;
+            var table2 = wall.Table.Steel;
 
+            Print(table1);
+            Console.WriteLine();
+            Print(table2);
+
+            Console.ReadKey();
+
+        }
+        private static void Print(List<string[]> table)
+        {
             foreach (var row in table)
             {
                 foreach (var col in row)
@@ -61,9 +71,6 @@ namespace SpecTest
                 }
                 Console.WriteLine("");
             }
-
-
-            Console.ReadKey();
         }
     }
 }

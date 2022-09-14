@@ -100,7 +100,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\AssemblyTable.cs" />
     <Compile Include="Model\Detail.cs" />
     <Compile Include="Model\DetailFactory.cs" />
     <Compile Include="Model\Diameter.cs" />
