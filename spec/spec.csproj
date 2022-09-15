@@ -107,6 +107,7 @@
     <Compile Include="Model\Detail\DetailType.cs" />
     <Compile Include="Model\Assembly\AssemblyElement.cs" />
     <Compile Include="Model\Element\ElementFactory.cs" />
+    <Compile Include="Model\Embedded\EmbeddedType.cs" />
     <Compile Include="Model\Table\Table.cs" />
     <Compile Include="Model\Element\ElementType.cs" />
     <Compile Include="Model\Embedded\Embedded.cs" />
