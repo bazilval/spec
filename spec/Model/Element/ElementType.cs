@@ -9,11 +9,17 @@
         {
             Name = name;
         }
-
+        public abstract ElementType Duplicate();
     }
     public class UnknownType : ElementType
     {
         public UnknownType(string name) : base(name) { }
+
+        public override ElementType Duplicate()
+        {
+            return new UnknownType(Name);
+        }
+
         public override string GetDescripton()
         {
             return $"Устройство монолитного ж/б элемента {Name}";
@@ -34,6 +40,11 @@
         public override string GetDescripton()
         {
             return $"Устройство монолитной ж/б стены {Name} {(Height != null ? $"высотой {Height}мм," : "")} толщиной {Thickness}мм";
+        }
+
+        public override ElementType Duplicate()
+        {
+            return new WallType(Name, Thickness, Height);
         }
     }
     public class SlabType : ElementType
@@ -67,6 +78,12 @@
             }
             return descripton + $"{(HeightMark != null ? $"на отм. {HeightMark:d3}, " : "")} толщиной { Thickness}мм";
         }
+
+        public override ElementType Duplicate()
+        {
+            return new SlabType(Name, Thickness, HeightMark);
+        }
+
         public enum SlabTypes { UNKNOWN, FLOOR, ROOF };
     }
     

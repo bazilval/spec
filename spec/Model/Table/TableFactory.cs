@@ -8,6 +8,18 @@ namespace spec.Model
 {
     public class TableFactory
     {
+        public static void CreateTables(AssemblyElement assembly)
+        {
+            if (!assembly.IsReady())
+            {
+                return;
+            }
+            assembly.Table = new Table();
+
+            ElementTableFactory.CreateTable(assembly.Elements, assembly.Table);
+            SteelTableFactory.CreateTable(assembly.Elements, assembly.Table);
+        }
+
         public static void CreateTables(Element element)
         {
             if (!element.IsReady())
@@ -16,7 +28,7 @@ namespace spec.Model
             }
             element.Table = new Table();
 
-            ElementTableFactory.CreateTable(element);
+            ElementTableFactory.CreateTable(element, element.Table);
             SteelTableFactory.CreateTable(element);
         }
         private class ElementTableFactory
@@ -25,19 +37,24 @@ namespace spec.Model
             public static string DetailsHeader = "_Детали";
             public static string EmbeddedsHeader = "_Металлоизделия";
             public static string MaterialsHeader = "_Материалы";
-            public static void CreateTable(Element element)
+            public static void CreateTable(List<Element> elements, Table table)
             {
-                var table = element.Table;
-
+                foreach (var element in elements)
+                {
+                    CreateTable(element, table);
+                    table.AddElementEmptyRow();
+                }
+            }
+            public static void CreateTable(Element element, Table table)
+            {
                 AddElementHeader(table, $"_{element.Name}");
                 //WriteEmbeddeds(element);
-                table.AddElementEmptyRow();
-                WriteDetails(element);
+                //table.AddElementEmptyRow();
+                WriteDetails(element, table);
                 //WriteMaterials(element);
             }
-            private static void WriteDetails(Element element)
+            private static void WriteDetails(Element element, Table table)
             {
-                var table = element.Table;
                 var comparer = new MarkComparer();
                 var groupedDetails = element.Details.GroupBy(detail => new { Diameter = detail.Diameter, Steel = detail.Steel },
                                                             detail => detail,
@@ -98,6 +115,17 @@ namespace spec.Model
         }
         private class SteelTableFactory
         {
+            public static void CreateTable(List<Element> elements, Table table)
+            {
+                var steelGroups = GetSteelGroups(elements);
+                //if (element.Embeddeds.Count != 0)
+                //{
+                //    var embGroups = GetEmbGroups(element);
+                //}
+                AddHeaders(table, steelGroups);
+                AddData(elements, table, steelGroups);
+            }
+
             public static void CreateTable(Element element)
             {
                 var table = element.Table;
@@ -195,22 +223,111 @@ namespace spec.Model
                 }
                 table.Steel[currentRow][currentCol] = steelGroups.Sum(x => x.diameterGroups.Sum(y => y.mass)).ToString();
             }
+            private static void AddData(List<Element> elements, Table table, List<SteelGroup> steelGroups)
+            {
+                int colCount = table.Steel[0].Length;
 
-            private static List<SteelGroup> GetSteelGroups(Element element)
+
+                foreach (var element in elements)
+                {
+                    table.AddSteelRows(colCount, 1);
+                    var currentRow = table.Steel.Count - 1;
+                    var groups = GetSteelGroups(element);
+                    table.Steel[currentRow][0] = element.Name;
+                    int currentCol = 1;
+                    WriteDetails(table, steelGroups, groups, currentRow, ref currentCol);
+                    //WriteEmbeddeds(table, steelGroups, currentRow, ref currentCol);
+                }
+            }
+            private static void WriteDetails(Table table, List<SteelGroup> assemblySteelGroups, List<SteelGroup> steelGroups, int currentRow, ref int currentCol)
+            {
+                int groupIndex = 0;
+                for (int i = 0; i < assemblySteelGroups.Count; i++)
+                {
+                    int diameterIndex = 0;
+                    var assemblyGroup = assemblySteelGroups[i];
+                    var group = steelGroups[groupIndex];
+
+                    var assemblyDiameters = assemblyGroup.diameterGroups;
+                    var diameters = group.diameterGroups;
+                    if (assemblyDiameters.Count == 1)
+                    {
+                        table.Steel[currentRow][currentCol] = assemblyDiameters[0].Equals(diameters[0]) ? $"{diameters[0].mass}" : "-";
+                        currentCol += 2;
+                    }
+                    else
+                    {
+                        for (int j = 0; j < assemblyDiameters.Count; j++)
+                        {
+                            if (assemblyDiameters[j].Equals(diameters[diameterIndex]))
+                            {
+                                var mass = diameters[diameterIndex].mass;
+                                table.Steel[currentRow][currentCol] = $"{mass}";
+                                if (diameterIndex < diameters.Count-1)
+                                {
+                                    diameterIndex++;
+                                }
+                                currentCol++;
+                            }
+                            else
+                            {
+                                table.Steel[currentRow][currentCol] = "-";
+                                currentCol++;
+                            }
+                        }
+                    }
+                    if (assemblyGroup.Equals(group))
+                    {
+                        table.Steel[currentRow][currentCol] = diameters.Sum(x => x.mass).ToString();
+                        if (groupIndex < steelGroups.Count - 1)
+                        {
+                            groupIndex++;
+                        }
+                    }
+                    else
+                    {
+                        table.Steel[currentRow][currentCol] = "-";
+                    }
+                    currentCol++;
+                }
+                table.Steel[currentRow][currentCol] = steelGroups.Sum(x => x.diameterGroups.Sum(y => y.mass)).ToString();
+            }
+
+            private static List<DiameterGroup> GetDiameterGroups(Element element)
             {
                 var details = element.Details;
-                List<SteelGroup> groups = details.GroupBy(det => new { diameter = det.Diameter, steel = det.Steel },
-                                                          det => det,
-                                                          (d, det) => new DiameterGroup(d.steel, d.diameter, det.Sum(x => x.TotalMass)))
-                                                 .GroupBy(x => x.steel,
+                List<DiameterGroup> groups = details.GroupBy(det => new { diameter = det.Diameter, steel = det.Steel },
+                                                         det => det,
+                                                         (d, det) => new DiameterGroup(d.steel, d.diameter, det.Sum(x => x.TotalMass))).ToList();
+                return groups;
+            }
+            private static List<SteelGroup> GetSteelGroups(List<DiameterGroup> diameters)
+            {
+                return diameters.GroupBy(x => x.steel,
                                                           x => x,
                                                           (st, x) => new SteelGroup(st, x.OrderByDescending(y => y.diameter.Value).ToList()))
                                                  .OrderBy(gr => gr.steel.Name)
                                                  .ToList();
+            }
+            private static List<SteelGroup> GetSteelGroups(Element element)
+            {
+                var details = element.Details;
+                List<DiameterGroup> diameters = GetDiameterGroups(element);
+                List<SteelGroup> groups = GetSteelGroups(diameters);
                 return groups;
             }
+            private static List<SteelGroup> GetSteelGroups(List<Element> elements)
+            {
+                List<DiameterGroup> allDiameters = new List<DiameterGroup>();
+                foreach (Element element in elements)
+                {
+                    var diameters = GetDiameterGroups(element);
+                    allDiameters = allDiameters.Union(diameters).ToList();
+                }
+                return GetSteelGroups(allDiameters);
+            }
 
-            private class DiameterGroup
+            private class DiameterGroup : IEquatable<DiameterGroup>
             {
                 public Steel steel;
                 public Diameter diameter;
@@ -222,17 +339,29 @@ namespace spec.Model
                     this.diameter = diameter;
                     this.mass = mass;
                 }
+                public bool Equals(DiameterGroup other)
+                {
+                    if (other is null) return false;
+                    return this.steel == other.steel && this.diameter == other.diameter;
+                }
+                public override int GetHashCode() => (steel, diameter).GetHashCode();
             }
-            private class SteelGroup
+            private class SteelGroup : IEquatable<SteelGroup>
             {
                 public Steel steel;
                 public List<DiameterGroup> diameterGroups;
-
                 public SteelGroup(Steel steel, List<DiameterGroup> diameterGroups)
                 {
                     this.steel = steel;
                     this.diameterGroups = diameterGroups;
                 }
+
+                public bool Equals(SteelGroup other)
+                {
+                    if (other is null) return false;
+                    return this.steel == other.steel;
+                }
+                public override int GetHashCode() => (steel).GetHashCode();
             }
         }
         private class MarkComparer : IComparer<string>

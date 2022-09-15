@@ -12,6 +12,7 @@ namespace SpecTest
         static void Main(string[] args)
         {
             Diameter d32 = new Diameter("d32", 32, 6.313);
+            Diameter d25 = new Diameter("d25", 25, 3.853);
             Diameter d16 = new Diameter("d16", 16, 1.578);
             Diameter d8 = new Diameter("d8", 8, 0.395);
 
@@ -48,10 +49,24 @@ namespace SpecTest
                 wall.Add(detail);
             }
 
-            TableFactory.CreateTables(wall);
+            var wall2 = ElementFactory.CreateWall("СТм2", 1, 250, 4500);
+            project.AddElement(wall2);
+            Console.WriteLine(wall2.Type.GetDescripton());
 
-            var table1 = wall.Table.Element;
-            var table2 = wall.Table.Steel;
+            wall2.Add(DetailFactory.CreateRegularDetail(wall2, "1", A400, d25, 10, 1000));
+            wall2.Add(DetailFactory.CreateTotalDetail(wall2, "2", A400, d32, 150000));
+            List<Element> elements = new List<Element> { wall, wall2 };
+            for (int i = 3; i < 40; i++)
+            {
+                elements.Add(project.DuplicateElement(wall2,$"СТм{i}"));
+            }
+
+            var assembly = new AssemblyElement("Сборка 1", elements);
+            project.AddAssembly(assembly);
+            TableFactory.CreateTables(assembly);
+
+            var table1 = assembly.Table.Element;
+            var table2 = assembly.Table.Steel;
 
             Print(table1);
             Console.WriteLine();

@@ -51,12 +51,13 @@ namespace spec.Model
             }
         }
 
-        public void DuplicateElement(Element element, string name)
+        public Element DuplicateElement(Element element, string name)
         {
             if (ElementNames.Add(name))
             {
-                Element newElement = new Element(name, element.Type, element.Count, element.Details, element.Materials, element.Embeddeds, element.Marks);
+                Element newElement = new Element(name, element.Type.Duplicate(), element.Count, element.Details, element.Materials, element.Embeddeds, element.Marks);
                 Elements.Add(newElement);
+                return newElement;
             }
             else
             {
