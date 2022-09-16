@@ -9,5 +9,6 @@
             Name = name;
             Gost = gost;
         }
+        public override string ToString() => $"{Name} {Gost}";
     }
 }
