@@ -22,12 +22,13 @@ namespace spec.Model
         {
             Element.Add(EmptyRow);
         }
-        public void AddSteelRows(int colCount, int rowCount)
+        public int AddSteelRows(int colCount, int rowCount)
         {
             for (int i = 0; i < rowCount; i++)
             {
                 Steel.Add(new string[colCount]);
             }
+            return Steel.Count - 1;
         }
     }
 }

@@ -13,5 +13,6 @@
             Mass = mass;
             BendRadius = value * 5;
         }
+        public override string ToString() => $"Ø{Value}";
     }
 }

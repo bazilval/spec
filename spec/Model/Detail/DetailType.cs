@@ -17,6 +17,18 @@ namespace spec.Model
         public bool IsSpecial { get; set; }
         public bool IsTotal { get; set; }
         public bool IsAverage { get; set; }
+        public override string ToString()
+        {
+            if (IsTotal)
+            {
+                return $"Lобщ. = {Length}";
+            }
+            if (IsAverage)
+            {
+                return $"Lср. = {Length}";
+            }
+            return $"L = {Length}";
+        }
     }
     public class RegularType : IDetailType
     {

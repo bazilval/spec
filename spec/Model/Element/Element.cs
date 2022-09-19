@@ -15,7 +15,6 @@ namespace spec.Model
         public List<Embedded> Embeddeds { get; set; }
         public List<Material> Materials { get; set; }
         public HashSet<string> Marks { get; set; }
-        //public HashSet<Diameter> Diameters { get; set; }
         public int Count { get; set; }
         public Element(string name, ElementType type, int count, List<Detail> details, List<Material> materials, List<Embedded> embeddeds, HashSet<string> marks)
         {
@@ -35,12 +34,24 @@ namespace spec.Model
             if (Marks.Add(detail.Mark))
             {
                 Details.Add(detail);
-                //Diameters.Add(detail.GetDiameter());
                 OnChange();
             }
             else
             {
                 throw new ArgumentException($"Марка \"{detail.Mark}\" уже существует!");
+            }
+        }
+        public void Add(Embedded emb)
+        {
+            if (emb == null) return;
+            if (Marks.Add(emb.Mark))
+            {
+                Embeddeds.Add(emb);
+                OnChange();
+            }
+            else
+            {
+                throw new ArgumentException($"Марка \"{emb.Mark}\" уже существует!");
             }
         }
         public void Remove(Detail detail)
@@ -50,6 +61,16 @@ namespace spec.Model
             if (Details.Remove(detail))
             {
                 Marks.Remove(detail.Mark);
+                OnChange();
+            }
+        }
+        public void Remove(Embedded emb)
+        {
+            if (emb == null) return;
+
+            if (Embeddeds.Remove(emb))
+            {
+                Marks.Remove(emb.Mark);
                 OnChange();
             }
         }
@@ -63,7 +84,7 @@ namespace spec.Model
         }
         public bool IsReady()
         {
-            return Details.All(x=>x.IsReady());
+            return Details.All(x => x.IsReady) && Embeddeds.All(x => x.IsReady);
         }
     }
 }

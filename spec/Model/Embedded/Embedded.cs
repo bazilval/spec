@@ -13,11 +13,19 @@
         public double TotalMass { get => Mass * Count; }
         public string Mark { get; set; }
         public string Description { get; set; }
+        public bool IsReady => (TotalMass != 0);
+        public Embedded(Element element, string mark, IEmbeddedType type, Steel steel, int count)
+        {
+            ParentElement = element;
+            Mark = mark;
+            Type = type;
+            Steel = steel;
+            Count = count;
+        }
         void OnChange()
         {
             ParentElement.OnChange();
         }
-        public bool IsReady() => (TotalMass != 0);
     }
 
     

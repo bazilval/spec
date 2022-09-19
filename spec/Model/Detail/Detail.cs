@@ -11,6 +11,7 @@ namespace spec.Model
         private IDetailType type;
         private Steel steel;
         private int count;
+
         public Element ParentElement { get; }
         public IDetailType Type { get => type; set { type = value; OnChange(); } }
         public Steel Steel { get => steel; set { steel = value; OnChange(); } }
@@ -24,6 +25,7 @@ namespace spec.Model
         public bool IsTotal { get => Type.IsTotal; }
         public bool IsAverage { get => Type.IsAverage; }
         public string Mark { get; set; }
+        public bool IsReady => (TotalMass != 0);
 
         public Detail(Element element, string mark, IDetailType type, Steel steel, int count)
         {
@@ -40,7 +42,5 @@ namespace spec.Model
         {
             ParentElement.OnChange();
         }
-        public bool IsReady() => (TotalMass != 0);
-
     }
 }

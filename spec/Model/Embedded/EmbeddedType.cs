@@ -32,11 +32,19 @@ namespace spec.Model
         public override string DescriptionFull => $"{Name} {Thickness}х{Width} {Gost} {Steel}";
         public override string DescriptionShort => $"{Name} {Thickness}х{Width}";
         public override string DescriptionLength => $"L = {Length}";
-        public StripType(Steel steel, int thickness, int width, int length) : base("ГОСТ 103-2006", "Полоса", steel)
+        public StripType(Steel steel, string gost, int thickness, int width, int length) : base(gost, "Полоса", steel)
         {
             Thickness = thickness;
             Width = width;
             Length = length;
         }
+    }
+    public class RegularStripType : StripType
+    {
+        public RegularStripType(Steel steel, int thickness, int width, int length) : base(steel, "ГОСТ 103-2006", thickness, width, length) { }
+    }
+    public class WideStripType : StripType
+    {
+        public WideStripType(Steel steel, int thickness, int width, int length) : base(steel, "ГОСТ 82-70", thickness, width, length) { }
     }
 }

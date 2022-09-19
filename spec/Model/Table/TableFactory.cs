@@ -33,7 +33,6 @@ namespace spec.Model
         }
         private class ElementTableFactory
         {
-            public static string DiameterHeader = "Пруток МД-<DIAM>-<STEEL> <GOST>";
             public static string DetailsHeader = "_Детали";
             public static string EmbeddedsHeader = "_Металлоизделия";
             public static string MaterialsHeader = "_Материалы";
@@ -56,19 +55,14 @@ namespace spec.Model
             private static void WriteDetails(Element element, Table table)
             {
                 var comparer = new MarkComparer();
-                var groupedDetails = element.Details.GroupBy(detail => new { Diameter = detail.Diameter, Steel = detail.Steel },
+                var groupedDetails = element.Details.GroupBy(detail => new DiameterGroup(detail.Steel, detail.Diameter, 0),
                                                             detail => detail,
-                                                            (group, details) => new { Group = group, Details = details.OrderBy(detail => detail.Mark, comparer) })
-                                                    .OrderByDescending(gr => gr.Group.Steel.Name).ThenByDescending(gr => gr.Group.Diameter.Value);
+                                                            (group, details) => new { DiameterGroup = group, Details = details.OrderBy(detail => detail.Mark, comparer) })
+                                                    .OrderByDescending(gr => gr.DiameterGroup.steel.Name).ThenByDescending(gr => gr.DiameterGroup.diameter.Value);
                 AddElementHeader(table, DetailsHeader);
                 foreach (var group in groupedDetails)
                 {
-                    var diam = group.Group.Diameter;
-                    var steel = group.Group.Steel;
-                    var header = (DiameterHeader.Replace("<DIAM>", diam.Value.ToString())
-                                                .Replace("<STEEL>", steel.Name)
-                                                .Replace("<GOST>", steel.Gost));
-                    AddElementHeader(table, header);
+                    AddElementHeader(table, group.DiameterGroup.ToString());
                     foreach (var detail in group.Details)
                     {
                         AddDetail(table, detail);
@@ -78,52 +72,35 @@ namespace spec.Model
             private static void AddDetail(Table table, Detail detail)
             {
                 var mark = detail.IsSpecial ? $"{detail.Mark}*" : detail.Mark;
-                var len = detail.Length;
-                var count = (int)detail.Count;
-                var mass = detail.Mass;
+                var len = detail.Type.ToString();
+                var count = detail.Count.ToString();
+                var mass = detail.Mass.ToString();
 
                 if (detail.Type.IsTotal)
                 {
-                    AddTotalDetail(table, mark, len, mass);
-                }
-                else if (detail.Type.IsAverage)
-                {
-                    AddAverageDetail(table, mark, len, count, mass);
+                    table.AddElementRow(new string[] { mark, "", len, "-", "-", $"{mass}кг" });
                 }
                 else
                 {
-                    AddRegularDetail(table, mark, len, count, mass);
+                    table.AddElementRow(new string[] { mark, "", len, count, mass, "" });
                 }
             }
-
             private static void AddElementHeader(Table table, string header)
             {
                 table.AddElementRow(new string[] { "", "", header, "", "", "" });
-            }
-            private static void AddRegularDetail(Table table, string mark, int len, int count, double mass)
-            {
-                table.AddElementRow(new string[] { mark, "", $"L = {len}", count.ToString(), mass.ToString(), "" });
-            }
-            private static void AddAverageDetail(Table table, string mark, int len, int count, double mass)
-            {
-                table.AddElementRow(new string[] { mark, "", $"Lср. = {len}", count.ToString(), mass.ToString(), "" });
-            }
-            private static void AddTotalDetail(Table table, string mark, int len, double mass)
-            {
-                table.AddElementRow(new string[] { mark, "", $"Lобщ. = {len}", "-", "-", $"{mass}кг" });
             }
         }
         private class SteelTableFactory
         {
             public static void CreateTable(List<Element> elements, Table table)
             {
-                var steelGroups = GetSteelGroups(elements);
+                var assembleSteelGroups = GetAssembleSteelGroups(elements);
                 //if (element.Embeddeds.Count != 0)
                 //{
                 //    var embGroups = GetEmbGroups(element);
                 //}
-                AddHeaders(table, steelGroups);
-                AddData(elements, table, steelGroups);
+                AddHeaders(table, assembleSteelGroups);
+                AddData(elements, table, assembleSteelGroups);
             }
 
             public static void CreateTable(Element element)
@@ -135,7 +112,7 @@ namespace spec.Model
                 //    var embGroups = GetEmbGroups(element);
                 //}
                 AddHeaders(table, steelGroups);
-                AddData(element, table, steelGroups);
+                AddData(element, table, steelGroups, null);
             }
             private static void AddHeaders(Table table, List<SteelGroup> steelGroups)
             {
@@ -160,85 +137,64 @@ namespace spec.Model
                 table.Steel[2][1] = "Арматура класса";
 
                 int currentCol = 1;
-                for (int i = 0; i < steelGroups.Count; i++)
-                {
-                    var group = steelGroups[i];
-                    var diameters = group.diameterGroups;
-                    table.Steel[3][currentCol] = group.steel.Name;
-                    table.Steel[4][currentCol] = group.steel.Gost;
-                    if (diameters.Count == 1)
-                    {
-                        table.Steel[5][currentCol] = $"Ø{diameters[0].diameter.Value}";
-                        currentCol += 2;
-                    }
-                    else
-                    {
-                        for (int j = 0; j < diameters.Count; j++)
-                        {
-                            var diameter = diameters[j].diameter;
-                            table.Steel[5][currentCol] = $"Ø{diameter.Value}";
-                            currentCol++;
-                        }
-                    }
-                    table.Steel[5][currentCol] = "Итого";
-                    currentCol++;
-                }
-                table.Steel[2][currentCol] = "Всего";
+                WriteDetails(table, steelGroups, 5, ref currentCol, FillOption.Headers);
             }
-            private static void AddData(Element element, Table table, List<SteelGroup> steelGroups)
+            private static void AddData(Element element, Table table, List<SteelGroup> steelGroups, List<SteelGroup> assembleSteelGroups)
             {
                 int colCount = table.Steel[0].Length;
-                table.AddSteelRows(colCount, 1);
-                var currentRow = table.Steel.Count - 1;
-
+                var currentRow = table.AddSteelRows(colCount, 1);
                 table.Steel[currentRow][0] = element.Name;
-
                 int currentCol = 1;
-                WriteDetails(table, steelGroups, currentRow, ref currentCol);
-                //WriteEmbeddeds(table, steelGroups, currentRow, ref currentCol);
-            }
-
-            private static void WriteDetails(Table table, List<SteelGroup> steelGroups, int currentRow, ref int currentCol)
-            {
-                for (int i = 0; i < steelGroups.Count; i++)
+                if (assembleSteelGroups == null)
                 {
-                    var group = steelGroups[i];
-                    var diameters = group.diameterGroups;
-                    if (diameters.Count == 1)
-                    {
-                        table.Steel[currentRow][currentCol] = $"{diameters[0].mass}";
-                        currentCol += 2;
-                    }
-                    else
-                    {
-                        for (int j = 0; j < diameters.Count; j++)
-                        {
-                            var mass = diameters[j].mass;
-                            table.Steel[currentRow][currentCol] = $"{mass}";
-                            currentCol++;
-                        }
-                    }
-                    table.Steel[currentRow][currentCol] = diameters.Sum(x => x.mass).ToString();
-                    currentCol++;
-                }
-                table.Steel[currentRow][currentCol] = steelGroups.Sum(x => x.diameterGroups.Sum(y => y.mass)).ToString();
-            }
-            private static void AddData(List<Element> elements, Table table, List<SteelGroup> steelGroups)
-            {
-                int colCount = table.Steel[0].Length;
-
-
-                foreach (var element in elements)
-                {
-                    table.AddSteelRows(colCount, 1);
-                    var currentRow = table.Steel.Count - 1;
-                    var groups = GetSteelGroups(element);
-                    table.Steel[currentRow][0] = element.Name;
-                    int currentCol = 1;
-                    WriteDetails(table, steelGroups, groups, currentRow, ref currentCol);
+                    WriteDetails(table, steelGroups, currentRow, ref currentCol, FillOption.Data);
                     //WriteEmbeddeds(table, steelGroups, currentRow, ref currentCol);
                 }
+                else
+                {
+                    steelGroups = GetSteelGroups(element);
+                    WriteDetails(table, assembleSteelGroups, steelGroups, currentRow, ref currentCol);
+                }
             }
+            private static void AddData(List<Element> elements, Table table, List<SteelGroup> assembleSteelGroups)
+            {
+                foreach (var element in elements)
+                {
+                    AddData(element, table, null, assembleSteelGroups);
+                }
+            }
+            private static void WriteDetails(Table table, List<SteelGroup> steelGroups, int currentRow, ref int currentCol, FillOption option)
+            {
+                foreach (var group in steelGroups)
+                {
+                    if (option == FillOption.Headers)
+                    {
+                        table.Steel[3][currentCol] = group.steel.Name;
+                        table.Steel[4][currentCol] = group.steel.Gost;
+                    }
+                    var diameterGroups = group.diameterGroups;
+
+                    var count = 0;
+                    foreach (var diameterGroup in diameterGroups)
+                    {
+                        var diameter = diameterGroup.diameter;
+                        table.Steel[currentRow][currentCol] =
+                            (option == FillOption.Headers) ? diameter.ToString() : diameterGroup.mass.ToString();
+                        count++;
+                        currentCol++;
+                    }
+                    if (count == 1) currentCol++;
+
+                    table.Steel[currentRow][currentCol] =
+                                (option == FillOption.Headers) ? "Итого" : diameterGroups.Sum(x => x.mass).ToString();
+                    currentCol++;
+                }
+                var text = (option == FillOption.Headers) ? "Всего" : steelGroups.Sum(x => x.diameterGroups.Sum(y => y.mass)).ToString();
+                var row = (option == FillOption.Headers) ? 2 : currentRow;
+                table.Steel[row][currentCol] = text;
+            }
+            enum FillOption { Headers, Data }
+
             private static void WriteDetails(Table table, List<SteelGroup> assemblySteelGroups, List<SteelGroup> steelGroups, int currentRow, ref int currentCol)
             {
                 int groupIndex = 0;
@@ -263,7 +219,7 @@ namespace spec.Model
                             {
                                 var mass = diameters[diameterIndex].mass;
                                 table.Steel[currentRow][currentCol] = $"{mass}";
-                                if (diameterIndex < diameters.Count-1)
+                                if (diameterIndex < diameters.Count - 1)
                                 {
                                     diameterIndex++;
                                 }
@@ -311,12 +267,11 @@ namespace spec.Model
             }
             private static List<SteelGroup> GetSteelGroups(Element element)
             {
-                var details = element.Details;
                 List<DiameterGroup> diameters = GetDiameterGroups(element);
                 List<SteelGroup> groups = GetSteelGroups(diameters);
                 return groups;
             }
-            private static List<SteelGroup> GetSteelGroups(List<Element> elements)
+            private static List<SteelGroup> GetAssembleSteelGroups(List<Element> elements)
             {
                 List<DiameterGroup> allDiameters = new List<DiameterGroup>();
                 foreach (Element element in elements)
@@ -325,26 +280,6 @@ namespace spec.Model
                     allDiameters = allDiameters.Union(diameters).ToList();
                 }
                 return GetSteelGroups(allDiameters);
-            }
-
-            private class DiameterGroup : IEquatable<DiameterGroup>
-            {
-                public Steel steel;
-                public Diameter diameter;
-                public double mass;
-
-                public DiameterGroup(Steel steel, Diameter diameter, double mass)
-                {
-                    this.steel = steel;
-                    this.diameter = diameter;
-                    this.mass = mass;
-                }
-                public bool Equals(DiameterGroup other)
-                {
-                    if (other is null) return false;
-                    return this.steel == other.steel && this.diameter == other.diameter;
-                }
-                public override int GetHashCode() => (steel, diameter).GetHashCode();
             }
             private class SteelGroup : IEquatable<SteelGroup>
             {
@@ -363,6 +298,26 @@ namespace spec.Model
                 }
                 public override int GetHashCode() => (steel).GetHashCode();
             }
+        }
+        private class DiameterGroup : IEquatable<DiameterGroup>
+        {
+            public Steel steel;
+            public Diameter diameter;
+            public double mass;
+
+            public DiameterGroup(Steel steel, Diameter diameter, double mass)
+            {
+                this.steel = steel;
+                this.diameter = diameter;
+                this.mass = mass;
+            }
+            public bool Equals(DiameterGroup other)
+            {
+                if (other is null) return false;
+                return this.steel == other.steel && this.diameter == other.diameter;
+            }
+            public override int GetHashCode() => (steel, diameter).GetHashCode();
+            public override string ToString() => $"Пруток МД-{diameter.Value}-{steel.ToString()}";
         }
         private class MarkComparer : IComparer<string>
         {
